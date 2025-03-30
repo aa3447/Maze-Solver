@@ -26,4 +26,10 @@ class Windows:
 
     def draw_line(self, line, line_color):
         line.draw(self.__canvas,line_color)
+
+    def get_width(self):
+        return self.__width
+    
+    def get_height(self):
+        return self.__height
         

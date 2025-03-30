@@ -1,0 +1,50 @@
+from points import Point
+from lines import Line
+
+class Cell:
+    def __init__(self, x1, y1, x2, y2, window = None):
+        self.has_left_wall = True
+        self.has_right_wall = True
+        self.has_top_wall = True
+        self.has_bottom_wall = True
+        
+        # top left corner 
+        self.__x1 = x1
+        self.__y1 = y1
+        
+        # bottom right corner
+        self.__x2 = x2
+        self.__y2 = y2
+
+        self.__center_x = (x1 + x2) // 2
+        self.__center_y = (y1 + y2) // 2
+        
+        self.__window = window
+    
+    def draw(self , line_color = "blue"):
+        lines = []
+        if self.has_left_wall:
+            line = Line(Point(self.__x1, self.__y1), Point(self.__x1, self.__y2))
+            lines.append(line)
+        if self.has_right_wall:
+            line = Line(Point(self.__x2, self.__y1), Point(self.__x2, self.__y2))
+            lines.append(line)
+        if self.has_top_wall:
+            line = Line(Point(self.__x1, self.__y1), Point(self.__x2, self.__y1))
+            lines.append(line)
+        if self.has_bottom_wall:
+            line = Line(Point(self.__x1, self.__y2), Point(self.__x2, self.__y2))
+            lines.append(line)
+
+        if self.__window is not None:
+            for line in lines:
+                self.__window.draw_line(line, line_color)
+
+    def draw_move(self, other_cell, undo=False):
+        if undo:
+            line_color = "gray"
+        else:
+            line_color = "red"
+
+        line = Line(Point(self.__center_x, self.__center_y), Point(other_cell.__center_x, other_cell.__center_y))
+        self.__window.draw_line(line, line_color)
