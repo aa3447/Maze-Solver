@@ -48,3 +48,16 @@ class Cell:
 
         line = Line(Point(self.__center_x, self.__center_y), Point(other_cell.__center_x, other_cell.__center_y))
         self.__window.draw_line(line, line_color)
+    
+    def get_x1(self):
+        return self.__x1
+    
+    def get_y1(self):
+        return self.__y1
+    
+    def get_x2(self):
+        return self.__x2
+    
+    def get_y2(self):
+        return self.__y2
+    
