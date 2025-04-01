@@ -7,7 +7,7 @@ class Cell:
         self.has_right_wall = True
         self.has_top_wall = True
         self.has_bottom_wall = True
-        
+        self.has_wall_list = [self.has_left_wall, self.has_right_wall, self.has_top_wall, self.has_bottom_wall]
         # top left corner 
         self.__x1 = x1
         self.__y1 = y1
@@ -23,22 +23,35 @@ class Cell:
     
     def draw(self , line_color = "blue"):
         lines = []
+
+        line = Line(Point(self.__x1, self.__y1), Point(self.__x1, self.__y2))
         if self.has_left_wall:
-            line = Line(Point(self.__x1, self.__y1), Point(self.__x1, self.__y2))
-            lines.append(line)
+            lines.append((line, line_color))
+        else:
+            lines.append((line, "white"))
+        
+        line = Line(Point(self.__x2, self.__y1), Point(self.__x2, self.__y2))
         if self.has_right_wall:
-            line = Line(Point(self.__x2, self.__y1), Point(self.__x2, self.__y2))
-            lines.append(line)
+            lines.append((line, line_color))
+        else:
+            lines.append((line, "white"))
+        
+        line = Line(Point(self.__x1, self.__y1), Point(self.__x2, self.__y1))
         if self.has_top_wall:
-            line = Line(Point(self.__x1, self.__y1), Point(self.__x2, self.__y1))
-            lines.append(line)
+            lines.append((line, line_color))
+        else:
+            lines.append((line, "white"))
+
+        line = Line(Point(self.__x1, self.__y2), Point(self.__x2, self.__y2))
         if self.has_bottom_wall:
-            line = Line(Point(self.__x1, self.__y2), Point(self.__x2, self.__y2))
-            lines.append(line)
+            lines.append((line, line_color))
+        else:
+            lines.append((line, "white"))
 
         if self.__window is not None:
             for line in lines:
-                self.__window.draw_line(line, line_color)
+                self.__window.draw_line(line[0], line[1])
+
 
     def draw_move(self, other_cell, undo=False):
         if undo:

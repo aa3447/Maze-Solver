@@ -60,10 +60,23 @@ class Maze:
                 rows.append(cell)
         
             self.__cells.append(rows)
+        self.create_entrance_and_exit()
 
     def _animate(self):
         self.__window.redraw()
         sleep(0.05)
+
+    def create_entrance_and_exit(self):
+        entrance_cell = self.__cells[0][0]
+        entrance_cell.has_top_wall = False
+        if self.__window is not None:
+            entrance_cell.draw()
+            self._animate()
+        exit_cell = self.__cells[self.__num_rows - 1][self.__num_cols - 1]
+        exit_cell.has_bottom_wall = False
+        if self.__window is not None:
+            exit_cell.draw()
+            self._animate()
 
     def get_cells(self):
         return self.__cells
