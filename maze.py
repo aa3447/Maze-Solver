@@ -1,8 +1,9 @@
 from cells import Cell
 from time import sleep
+import random
 
 class Maze:
-    def __init__(self, x1, y1, num_rows, num_cols, cell_width = None, cell_height = None, window = None):
+    def __init__(self, x1, y1, num_rows, num_cols, cell_width = None, cell_height = None, window = None, seed = None):
         self.__window = window
         
         if window is not None:
@@ -37,6 +38,13 @@ class Maze:
        
         if num_rows <= 0 or num_cols <= 0:
             raise ValueError("num_rows and num_cols must be above 0")
+        
+        if seed is None:
+            random.seed()
+        else:
+            random.seed(seed)
+        
+        self.__seed = seed
         self.__num_rows = num_rows
         self.__num_cols = num_cols
         self.__x1 = x1
@@ -60,13 +68,9 @@ class Maze:
                 rows.append(cell)
         
             self.__cells.append(rows)
-        self.create_entrance_and_exit()
+        self._create_entrance_and_exit()
 
-    def _animate(self):
-        self.__window.redraw()
-        sleep(0.05)
-
-    def create_entrance_and_exit(self):
+    def _create_entrance_and_exit(self):
         entrance_cell = self.__cells[0][0]
         entrance_cell.has_top_wall = False
         if self.__window is not None:
@@ -77,6 +81,56 @@ class Maze:
         if self.__window is not None:
             exit_cell.draw()
             self._animate()
+        self._create_maze_path()
+        self._reset_visited()
+
+    def _create_maze_path(self, x = 0, y = 0):
+        self.__cells[y][x].visited = True
+        while True:
+            to_vist = []
+            if y > 0 and not self.__cells[y - 1][x].visited:
+                to_vist.append((x, y - 1))
+            if y < self.__num_rows - 1 and not self.__cells[y + 1][x].visited:
+                to_vist.append((x, y + 1))
+            if x > 0 and not self.__cells[y][x - 1].visited:
+                to_vist.append((x - 1, y))
+            if x < self.__num_cols - 1 and not self.__cells[y][x + 1].visited:
+                to_vist.append((x + 1, y))
+            if len(to_vist) == 0:
+                return
+           
+            next_cell = random.choice(to_vist)
+            
+            if next_cell[0] == x:
+                if next_cell[1] < y:
+                    self.__cells[y][x].has_top_wall = False
+                    self.__cells[next_cell[1]][next_cell[0]].has_bottom_wall = False
+                else:
+                    self.__cells[y][x].has_bottom_wall = False
+                    self.__cells[next_cell[1]][next_cell[0]].has_top_wall = False
+            else:
+                if next_cell[0] < x:
+                    self.__cells[y][x].has_left_wall = False
+                    self.__cells[next_cell[1]][next_cell[0]].has_right_wall = False
+                else:
+                    self.__cells[y][x].has_right_wall = False
+                    self.__cells[next_cell[1]][next_cell[0]].has_left_wall = False
+
+            if self.__window is not None:
+                self.__cells[y][x].draw()
+                self.__cells[next_cell[1]][next_cell[0]].draw()
+                self._animate()
+
+            self._create_maze_path(next_cell[0], next_cell[1])
+
+    def _reset_visited(self):
+        for row in self.__cells:
+            for col in row:
+                col.visited = False          
+    
+    def _animate(self):
+        self.__window.redraw()
+        sleep(0.05)
 
     def get_cells(self):
         return self.__cells
