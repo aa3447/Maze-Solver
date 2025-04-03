@@ -73,11 +73,13 @@ class Maze:
     def _create_entrance_and_exit(self):
         entrance_cell = self.__cells[0][0]
         entrance_cell.has_top_wall = False
+        entrance_cell.is_start = True
         if self.__window is not None:
             entrance_cell.draw()
             self._animate()
         exit_cell = self.__cells[self.__num_rows - 1][self.__num_cols - 1]
         exit_cell.has_bottom_wall = False
+        exit_cell.is_end = True
         if self.__window is not None:
             exit_cell.draw()
             self._animate()
@@ -123,6 +125,43 @@ class Maze:
 
             self._create_maze_path(next_cell[0], next_cell[1])
 
+
+    def solve(self):
+        return self._solve_recursive()
+
+    def _solve_recursive(self, x = 0, y = 0):
+        current_cell = self.__cells[y][x]
+        if current_cell.is_end:
+            return True
+        current_cell.visited = True
+        while True:
+            to_vist = []
+            if y > 0 and not self.__cells[y - 1][x].visited and not self.__cells[y - 1][x].has_bottom_wall:
+                to_vist.append((x, y - 1))
+            if y < self.__num_rows - 1 and not self.__cells[y + 1][x].visited and not self.__cells[y + 1][x].has_top_wall:
+                to_vist.append((x, y + 1))
+            if x > 0 and not self.__cells[y][x - 1].visited and not self.__cells[y][x - 1].has_right_wall:
+                to_vist.append((x - 1, y))
+            if x < self.__num_cols - 1 and not self.__cells[y][x + 1].visited and not self.__cells[y][x + 1].has_left_wall:
+                to_vist.append((x + 1, y))
+            if len(to_vist) == 0:       
+                return False
+            
+            next_cell = random.choice(to_vist)
+
+
+            found_end = self._solve_recursive(next_cell[0], next_cell[1])
+
+            if self.__window is not None:
+                if found_end:
+                    self.__cells[y][x].draw_move(self.__cells[next_cell[1]][next_cell[0]])
+                    self._animate()
+                    return True
+            
+                self.__cells[y][x].draw_move(self.__cells[next_cell[1]][next_cell[0]], undo=True)
+                self._animate()
+        
+            
     def _reset_visited(self):
         for row in self.__cells:
             for col in row:
