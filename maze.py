@@ -3,7 +3,7 @@ from time import sleep
 import random
 
 class Maze:
-    def __init__(self, x1, y1, num_rows, num_cols, cell_width = None, cell_height = None, window = None, seed = None):
+    def __init__(self, x1, y1, num_rows, num_cols, cell_width = None, cell_height = None, window = None, seed = None, animate_draw = True, animate_solve = True):
         self.__window = window
         
         if window is not None:
@@ -49,6 +49,9 @@ class Maze:
         self.__num_cols = num_cols
         self.__x1 = x1
         self.__y1 = y1
+        self.__animate_draw = animate_draw
+        self.__animate_solve = animate_solve
+        self.end_found_for_bfs = False
         self.__cells = []
         self._create_cells()
 
@@ -64,7 +67,8 @@ class Maze:
                                 self.__window)
                 if self.__window is not None:
                     cell.draw()
-                    self._animate()
+                    if self.__animate_draw:
+                        self._animate()
                 rows.append(cell)
         
             self.__cells.append(rows)
@@ -76,13 +80,15 @@ class Maze:
         entrance_cell.is_start = True
         if self.__window is not None:
             entrance_cell.draw()
-            self._animate()
+            if self.__animate_draw:
+                self._animate()
         exit_cell = self.__cells[self.__num_rows - 1][self.__num_cols - 1]
         exit_cell.has_bottom_wall = False
         exit_cell.is_end = True
         if self.__window is not None:
             exit_cell.draw()
-            self._animate()
+            if self.__animate_draw:
+                self._animate()
         self._create_maze_path()
         self._reset_visited()
 
@@ -121,15 +127,26 @@ class Maze:
             if self.__window is not None:
                 self.__cells[y][x].draw()
                 self.__cells[next_cell[1]][next_cell[0]].draw()
-                self._animate()
+                if self.__animate_draw:
+                    self._animate()
 
             self._create_maze_path(next_cell[0], next_cell[1])
 
 
-    def solve(self):
-        return self._solve_recursive()
+    def solve(self, method = "dfs"):
+        method = method.lower()
+        if method == "bfs":
+            to_vist = [(0,0)]
+            result = self._solve_recursive_bfs(to_vist)
+            self.end_found_for_bfs = False
+            return result
+        elif method == "dfs":
+            return self._solve_recursive_dfs()
+        else:
+            raise ValueError("method must be either BFS or DFS")
+        
 
-    def _solve_recursive(self, x = 0, y = 0):
+    def _solve_recursive_dfs(self, x = 0, y = 0):
         current_cell = self.__cells[y][x]
         if current_cell.is_end:
             return True
@@ -150,18 +167,56 @@ class Maze:
             next_cell = random.choice(to_vist)
 
 
-            found_end = self._solve_recursive(next_cell[0], next_cell[1])
+            found_end = self._solve_recursive_dfs(next_cell[0], next_cell[1])
 
             if self.__window is not None:
                 if found_end:
                     self.__cells[y][x].draw_move(self.__cells[next_cell[1]][next_cell[0]])
-                    self._animate()
+                    if self.__animate_solve:
+                        self._animate()
                     return True
             
                 self.__cells[y][x].draw_move(self.__cells[next_cell[1]][next_cell[0]], undo=True)
-                self._animate()
+                if self.__animate_solve:
+                    self._animate()
+    
+    def _solve_recursive_bfs(self , to_vist, x = 0, y = 0):
+        if self.__cells[y][x].is_end:
+            self.end_found_for_bfs = True
+            return True
+        self.__cells[y][x].visited = True
+
+     
+        temp_to_vist = []
+        if y > 0 and not self.__cells[y - 1][x].visited and not self.__cells[y - 1][x].has_bottom_wall:
+            temp_to_vist.append((x, y - 1))
+        if y < self.__num_rows - 1 and not self.__cells[y + 1][x].visited and not self.__cells[y + 1][x].has_top_wall:
+            temp_to_vist.append((x, y + 1))
+        if x > 0 and not self.__cells[y][x - 1].visited and not self.__cells[y][x - 1].has_right_wall:
+            temp_to_vist.append((x - 1, y))
+        if x < self.__num_cols - 1 and not self.__cells[y][x + 1].visited and not self.__cells[y][x + 1].has_left_wall:
+            temp_to_vist.append((x + 1, y))
+        if len(temp_to_vist) == 0:       
+            return False
         
-            
+        for cell in temp_to_vist:
+            if self.__window is not None:
+                self.__cells[y][x].draw_move(self.__cells[cell[1]][cell[0]])
+                if self.__animate_solve:
+                    self._animate()
+        
+        to_vist.extend(temp_to_vist)
+        
+        copy_to_vist = to_vist.copy()
+        for cell in copy_to_vist:
+            if len(to_vist) == 0:
+                return False
+            if self.end_found_for_bfs:
+                return True
+            cell_to_vist = to_vist.pop(0)
+            self._solve_recursive_bfs(to_vist, cell_to_vist[0], cell_to_vist[1])
+
+             
     def _reset_visited(self):
         for row in self.__cells:
             for col in row:

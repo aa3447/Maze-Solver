@@ -11,8 +11,8 @@ def main():
     cell_width = None
     cell_height = None
     seed = None
-    maze = Maze(maze_x_offset, maze_y_offset, maze_rows, maze_cols, cell_width, cell_height, window,seed)
-    maze.solve()
+    maze = Maze(maze_x_offset, maze_y_offset, maze_rows, maze_cols, cell_width, cell_height, window,seed, animate_draw=False)
+    maze.solve("bfs")
     window.wait_for_close()
 
 if __name__ == "__main__":
