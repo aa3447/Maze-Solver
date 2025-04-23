@@ -133,19 +133,23 @@ class Maze:
             self._create_maze_path(next_cell[0], next_cell[1])
 
 
-    def solve(self, method = "dfs"):
+    def solve(self, method = "dfs_recursive"):
         method = method.lower()
-        if method == "bfs":
-            to_vist = [(0,0)]
-            result = self._solve_recursive_bfs(to_vist)
-            self.end_found_for_bfs = False
-            return result
-        elif method == "dfs":
-            return self._solve_recursive_dfs()
-        else:
-            raise ValueError("method must be either BFS or DFS")
-        
-
+        match method:
+            case "bfs":
+                to_vist = [(0,0)]
+                result = self._solve_recursive_bfs(to_vist)
+                self.end_found_for_bfs = False
+                return result
+            case "bfs_iterative":
+                return self._solve_iterative_bfs()
+            case "dfs_iterative":
+                return self._solve_iterative_dfs()
+            case "dfs_recursive":
+                return self._solve_recursive_dfs()
+            case _:
+                raise ValueError("method must be either BFS or DFS")
+      
     def _solve_recursive_dfs(self, x = 0, y = 0):
         current_cell = self.__cells[y][x]
         if current_cell.is_end:
@@ -179,7 +183,40 @@ class Maze:
                 self.__cells[y][x].draw_move(self.__cells[next_cell[1]][next_cell[0]], undo=True)
                 if self.__animate_solve:
                     self._animate()
-    
+
+    def _solve_iterative_dfs(self, x = 0, y = 0):
+        next_cell = (x,y)
+        to_vist = []
+        temp_to_vist = []
+        while True:
+            temp_to_vist.clear()
+            if y > 0 and not self.__cells[y - 1][x].visited and not self.__cells[y - 1][x].has_bottom_wall:
+                temp_to_vist.append((x, y - 1))
+            if y < self.__num_rows - 1 and not self.__cells[y + 1][x].visited and not self.__cells[y + 1][x].has_top_wall:
+                temp_to_vist.append((x, y + 1))
+            if x > 0 and not self.__cells[y][x - 1].visited and not self.__cells[y][x - 1].has_right_wall:
+                temp_to_vist.append((x - 1, y))
+            if x < self.__num_cols - 1 and not self.__cells[y][x + 1].visited and not self.__cells[y][x + 1].has_left_wall:
+                temp_to_vist.append((x + 1, y))
+            
+            for cell in temp_to_vist:
+                if self.__window is not None:
+                    self.__cells[y][x].draw_move(self.__cells[cell[1]][cell[0]])
+                    if self.__animate_solve:
+                        self._animate()
+            
+            to_vist.extend(temp_to_vist)
+            if len(to_vist) == 0:       
+                return False 
+            
+            next_cell = to_vist.pop()
+            x = next_cell[0]
+            y = next_cell[1]
+            self.__cells[y][x].visited = True
+
+            if self.__cells[y][x].is_end:   
+                return True          
+            
     def _solve_recursive_bfs(self , to_vist, x = 0, y = 0):
         if self.__cells[y][x].is_end:
             self.end_found_for_bfs = True
@@ -215,6 +252,39 @@ class Maze:
                 return True
             cell_to_vist = to_vist.pop(0)
             self._solve_recursive_bfs(to_vist, cell_to_vist[0], cell_to_vist[1])
+    
+    def _solve_iterative_bfs(self, x = 0, y = 0):
+        next_cell = (x,y)
+        to_vist = []
+        temp_to_vist = []
+        while True:
+            temp_to_vist.clear()
+            if y > 0 and not self.__cells[y - 1][x].visited and not self.__cells[y - 1][x].has_bottom_wall:
+                temp_to_vist.append((x, y - 1))
+            if y < self.__num_rows - 1 and not self.__cells[y + 1][x].visited and not self.__cells[y + 1][x].has_top_wall:
+                temp_to_vist.append((x, y + 1))
+            if x > 0 and not self.__cells[y][x - 1].visited and not self.__cells[y][x - 1].has_right_wall:
+                temp_to_vist.append((x - 1, y))
+            if x < self.__num_cols - 1 and not self.__cells[y][x + 1].visited and not self.__cells[y][x + 1].has_left_wall:
+                temp_to_vist.append((x + 1, y))
+            
+            for cell in temp_to_vist:
+                if self.__window is not None:
+                    self.__cells[y][x].draw_move(self.__cells[cell[1]][cell[0]])
+                    if self.__animate_solve:
+                        self._animate()
+            
+            to_vist.extend(temp_to_vist)
+            if len(to_vist) == 0:       
+                return False 
+            
+            next_cell = to_vist.pop(0)
+            x = next_cell[0]
+            y = next_cell[1]
+            self.__cells[y][x].visited = True
+
+            if self.__cells[y][x].is_end:   
+                return True       
 
              
     def _reset_visited(self):
