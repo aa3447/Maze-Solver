@@ -134,9 +134,10 @@ class Maze:
 
 
     def solve(self, method = "dfs_recursive"):
+        self._reset_visited()
         method = method.lower()
         match method:
-            case "bfs":
+            case "bfs_recursive":
                 to_vist = [(0,0)]
                 result = self._solve_recursive_bfs(to_vist)
                 self.end_found_for_bfs = False
@@ -183,6 +184,9 @@ class Maze:
                 self.__cells[y][x].draw_move(self.__cells[next_cell[1]][next_cell[0]], undo=True)
                 if self.__animate_solve:
                     self._animate()
+            else:
+                if found_end:
+                    return True
 
     def _solve_iterative_dfs(self, x = 0, y = 0):
         next_cell = (x,y)
@@ -286,7 +290,10 @@ class Maze:
             if self.__cells[y][x].is_end:   
                 return True       
 
-             
+    def maze_regenerate(self):
+        self.__cells.clear()
+        self._create_cells()
+
     def _reset_visited(self):
         for row in self.__cells:
             for col in row:
