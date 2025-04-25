@@ -89,8 +89,9 @@ class Maze:
             exit_cell.draw()
             if self.__animate_draw:
                 self._animate()
-        self._create_maze_path()
+        self._create_maze_path_iterative()
         self._reset_visited()
+        print("Maze generated")
 
     def _create_maze_path(self, x = 0, y = 0):
         self.__cells[y][x].visited = True
@@ -131,6 +132,53 @@ class Maze:
                     self._animate()
 
             self._create_maze_path(next_cell[0], next_cell[1])
+
+    def _create_maze_path_iterative(self, x = 0, y = 0):
+        self.__cells[y][x].visited = True
+        backtrack_stack = [(x,y)]
+        temp_to_vist = []
+        while True:
+            temp_to_vist.clear()
+            if y > 0 and not self.__cells[y - 1][x].visited:
+                temp_to_vist.append((x, y - 1))
+            if y < self.__num_rows - 1 and not self.__cells[y + 1][x].visited:
+                temp_to_vist.append((x, y + 1))
+            if x > 0 and not self.__cells[y][x - 1].visited:
+                temp_to_vist.append((x - 1, y))
+            if x < self.__num_cols - 1 and not self.__cells[y][x + 1].visited:
+                temp_to_vist.append((x + 1, y))
+            
+            if len(backtrack_stack) == 0:
+                return False
+            if len(temp_to_vist) == 0:
+                next_cell = backtrack_stack.pop()
+            else:
+                next_cell = random.choice(temp_to_vist)
+                backtrack_stack.append((x,y))
+                if next_cell[0] == x:
+                    if next_cell[1] < y:
+                        self.__cells[y][x].has_top_wall = False
+                        self.__cells[next_cell[1]][next_cell[0]].has_bottom_wall = False
+                    else:
+                        self.__cells[y][x].has_bottom_wall = False
+                        self.__cells[next_cell[1]][next_cell[0]].has_top_wall = False
+                else:
+                    if next_cell[0] < x:
+                        self.__cells[y][x].has_left_wall = False
+                        self.__cells[next_cell[1]][next_cell[0]].has_right_wall = False
+                    else:
+                        self.__cells[y][x].has_right_wall = False
+                        self.__cells[next_cell[1]][next_cell[0]].has_left_wall = False
+           
+            if self.__window is not None:
+                self.__cells[y][x].draw()
+                self.__cells[next_cell[1]][next_cell[0]].draw()
+                if self.__animate_draw:
+                    self._animate()
+
+            x = next_cell[0]
+            y = next_cell[1]
+            self.__cells[y][x].visited = True
 
 
     def solve(self, method = "dfs_recursive"):
@@ -203,8 +251,8 @@ class Maze:
             if x < self.__num_cols - 1 and not self.__cells[y][x + 1].visited and not self.__cells[y][x + 1].has_left_wall:
                 temp_to_vist.append((x + 1, y))
             
-            for cell in temp_to_vist:
-                if self.__window is not None:
+            if self.__window is not None:
+                for cell in temp_to_vist:
                     self.__cells[y][x].draw_move(self.__cells[cell[1]][cell[0]])
                     if self.__animate_solve:
                         self._animate()
