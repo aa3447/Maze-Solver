@@ -32,4 +32,7 @@ class Windows:
     
     def get_height(self):
         return self.__height
+    
+    def get_canvas(self):
+        return self.__canvas
         

@@ -91,7 +91,6 @@ class Maze:
                 self._animate()
         self._create_maze_path_iterative()
         self._reset_visited()
-        print("Maze generated")
 
     def _create_maze_path(self, x = 0, y = 0):
         self.__cells[y][x].visited = True
@@ -340,6 +339,8 @@ class Maze:
 
     def maze_regenerate(self):
         self.__cells.clear()
+        if self.__window is not None:
+            self.__window.get_canvas().delete("path")
         self._create_cells()
 
     def _reset_visited(self):

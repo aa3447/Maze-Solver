@@ -61,7 +61,7 @@ class Cell:
         else:
             line_color = "red"
 
-        line = Line(Point(self.__center_x, self.__center_y), Point(other_cell.__center_x, other_cell.__center_y))
+        line = Line(Point(self.__center_x, self.__center_y), Point(other_cell.__center_x, other_cell.__center_y), tags="path")
         self.__window.draw_line(line, line_color)
     
     def get_x1(self):
